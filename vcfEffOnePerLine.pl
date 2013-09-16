@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+#use warnings;
+
 #-------------------------------------------------------------------------------
 #
 # Read a VCF file (via STDIN), split EFF fields from INFO column into many lines
@@ -9,13 +11,31 @@
 #       repeated. Only the 'EFF' field will change.
 #
 #															Pablo Cingolani 2012
+#													   MODIFIED BY BH NAJLA 2013
 #-------------------------------------------------------------------------------
 
-$INFO_FIELD_NUM = 7;
 
-while( $l = <STDIN> ) {
+my $file =shift @ARGV || die "usage: vcfEffOnePerlLineN.pl fichier.vcf \n";
+
+($prefixe=$file) =~ s/.vcf//;
+
+
+my $outfile = "$prefixe"."_"."OneLineEff.vcf";
+
+open (IN,$file);
+open(OUT,">$outfile") or die "Can't write to file '$file' [$!]\\n";
+
+my $verbosity = 0;
+
+my $INFO_FIELD_NUM = 7;
+
+#FILE OUT
+while($l = <IN>) {
 	# Show header lines
-	if( $l =~ /^#/ ) { print $l; }	
+	if ($verbosity >= 10) { print $l; }
+	if( $l =~ /^#/ ) { 
+		if ($verbosity >= 10) { print $l; } 
+	}	
 	else {
 		chomp $l;
 
@@ -25,10 +45,10 @@ while( $l = <STDIN> ) {
 		@t = split /\t/, $l;
 
 		# Get INFO column
-		$info = $t[ $INFO_FIELD_NUM ];
+		my $info = $t[ $INFO_FIELD_NUM ];
 
 		# Parse INFO column 
-		@infos = split /;/, $info;
+		my @infos = split /;/, $info;
 
 		# Find EFF field
 		$infStr = "";
@@ -39,7 +59,7 @@ while( $l = <STDIN> ) {
 		}	
 
 		# Print VCF line
-		if( $#effs <= 0 )	{ print "$l\n"; }	# No EFF found, just show line
+		if( $#effs <= 0 )	{ print OUT "$l\n"; }	# No EFF found, just show line
 		else {
 			$pre = "";
 			for( $i=0 ; $i < $INFO_FIELD_NUM ; $i++ ) { $pre .= ( $i > 0 ? "\t" : "" ) . "$t[$i]"; }
@@ -47,7 +67,11 @@ while( $l = <STDIN> ) {
 			$post = "";
 			for( $i=$INFO_FIELD_NUM+1 ; $i <= $#t ; $i++ ) { $post .= "\t$t[$i]"; }
 
-			foreach $eff ( @effs ) { print $pre . "\t" . $infStr . ( $infStr eq '' ? '' : ';' ) . "EFF=$eff" . $post . "\n" ; }
+			foreach $eff ( @effs ) { print OUT $pre . "\t" . $infStr . ( $infStr eq '' ? '' : ';' ) . "EFF=$eff" . $post . "\n" ; }
 		}
 	}
 }
+
+close(OUT);
+close(IN);
+
