@@ -13,7 +13,7 @@
 #															Pablo Cingolani 2012
 #													   MODIFIED BY BH NAJLA 2013
 #													   MAINTAINED BY Joseph Tran 2013
-#													   Version : v0.2
+#													   Version : v0.3
 #-------------------------------------------------------------------------------
 
 
